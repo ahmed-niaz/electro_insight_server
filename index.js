@@ -45,6 +45,15 @@ async function run() {
       res.send(result)
     })
 
+    // get a single query
+    app.get('/queries/:id',async(req,res)=>{
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      console.log(query);
+      const result = await queryCollection.findOne(query)
+      res.send(result)
+    })
+
     // get data based on email
     app.get('/query/:email',async(req,res)=>{
       const email = req.params.email
@@ -56,7 +65,7 @@ async function run() {
 
 
      // delete a query data form db
-     app.delete('/query/:id',async(req,res)=>{
+     app.delete('/query-id/:id',async(req,res)=>{
       const id = req.params.id
       const query = {_id: new ObjectId(id)}
       console.log(query);
