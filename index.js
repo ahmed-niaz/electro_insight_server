@@ -29,6 +29,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const queryCollection = client.db("electroInsight").collection("queries");
+    const recommendationCollection = client.db("electroInsight").collection("recommendation");
 
     // save query in DB
     app.post("/add-query", async (req, res) => {
@@ -38,6 +39,12 @@ async function run() {
       res.send(result);
     });
 
+    // save recommendation in Db
+    app.post("/add-recommendation", async (req, res) => {
+      const queryData = req.body;
+      const result = recommendationCollection.insertOne(queryData);
+      res.send(result);
+    });
     // get query from db
     app.get('/queries',async(req,res)=>{
       const result =await queryCollection.find().toArray();
