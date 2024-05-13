@@ -28,6 +28,22 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    const queryCollection = client.db("electroInsight").collection("queries");
+
+    // save query in DB
+    app.post("/add-query", async (req, res) => {
+      const queryData = req.body;
+      // console.log(queryData);
+      const result = queryCollection.insertOne(queryData);
+      res.send(result);
+    });
+
+    // get query from db
+    app.get('/queries',async(req,res)=>{
+      const result =await queryCollection.find().toArray();
+      // console.log(result);
+      res.send(result)
+    })
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
