@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const app = express();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
@@ -44,6 +44,26 @@ async function run() {
       // console.log(result);
       res.send(result)
     })
+
+    // get data based on email
+    app.get('/query/:email',async(req,res)=>{
+      const email = req.params.email
+      const query = {'user_info.email':email};
+      console.log(query);
+      const result = await queryCollection.find(query).toArray()
+      res.send(result)
+    })
+
+
+     // delete a query data form db
+     app.delete('/query/:id',async(req,res)=>{
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      console.log(query);
+      const result = await queryCollection.deleteOne(query)
+      res.send(result)
+    })
+
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
