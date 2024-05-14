@@ -61,7 +61,7 @@ async function run() {
     app.get("/query/:email", async (req, res) => {
       const email = req.params.email;
       const query = { "user_info.email": email };
-      console.log(query);
+      // console.log(query);
       const result = await queryCollection.find(query).toArray();
       res.send(result);
     });
@@ -73,52 +73,52 @@ async function run() {
       res.send(result);
     });
 
-    // // get my recommendation data on email
-    // app.get("/recommendation/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   const query = { "query.query_email": email };
-    //   console.log(query);
-    //   const result = await recommendationCollection.find(query).toArray();
-    //   res.send(result);
-    // });
+    //  recommendation for me data on email
+    app.get("/recForMe/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      // console.log(query);
+      const result = await recommendationCollection.find(query).toArray();
+      res.send(result);
+    });
 
-    // get recommendation for me
-    // app.get("/recommendation-for-me/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   const query = { "user_info.email": email };
-    //   console.log(query);
-    //   const result = await queryCollection.find(query).toArray();
-    //   res.send(result);
-    // });
+    //  //  My Recommendation me data on email
+    app.get("/my-rec/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "query.query_email": email };
+      // console.log(query);
+      const result = await recommendationCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // delete a query data form db
     app.delete("/query-id/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      console.log(query);
+      // console.log(query);
       const result = await queryCollection.deleteOne(query);
       res.send(result);
     });
 
-
-// update a query
-app.put("/queries/:id", async (req, res) => {
-  const id = req.params.id;
-  const queryData = req.body;
-  const query = { _id: new ObjectId(id) };
-  console.log(query);
-  const options = {upsert: true}
-  const updateDoc = {
-    $set:{
-      ...queryData
-    }
-  }
-  const result = await queryCollection.updateOne(query,updateDoc,options)
-  res.send(result)
-});
+    // update a query
+    app.put("/queries/:id", async (req, res) => {
+      const id = req.params.id;
+      const queryData = req.body;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...queryData,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
