@@ -29,7 +29,9 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const queryCollection = client.db("electroInsight").collection("queries");
-    const recommendationCollection = client.db("electroInsight").collection("recommendation");
+    const recommendationCollection = client
+      .db("electroInsight")
+      .collection("recommendation");
 
     // save query in DB
     app.post("/add-query", async (req, res) => {
@@ -39,47 +41,80 @@ async function run() {
       res.send(result);
     });
 
+    // get query from db
+    app.get("/queries", async (req, res) => {
+      const result = await queryCollection.find().toArray();
+      // console.log(result);
+      res.send(result);
+    });
+
+    // get a single query
+    app.get("/queries/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
+      const result = await queryCollection.findOne(query);
+      res.send(result);
+    });
+
+    // get data based on email
+    app.get("/query/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { "user_info.email": email };
+      console.log(query);
+      const result = await queryCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // save recommendation in Db
     app.post("/add-recommendation", async (req, res) => {
       const queryData = req.body;
       const result = recommendationCollection.insertOne(queryData);
       res.send(result);
     });
-    // get query from db
-    app.get('/queries',async(req,res)=>{
-      const result =await queryCollection.find().toArray();
-      // console.log(result);
-      res.send(result)
-    })
 
-    // get a single query
-    app.get('/queries/:id',async(req,res)=>{
-      const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+    // // get my recommendation data on email
+    // app.get("/recommendation/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   const query = { "query.query_email": email };
+    //   console.log(query);
+    //   const result = await recommendationCollection.find(query).toArray();
+    //   res.send(result);
+    // });
+
+    // get recommendation for me
+    // app.get("/recommendation-for-me/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   const query = { "user_info.email": email };
+    //   console.log(query);
+    //   const result = await queryCollection.find(query).toArray();
+    //   res.send(result);
+    // });
+    // delete a query data form db
+    app.delete("/query-id/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
       console.log(query);
-      const result = await queryCollection.findOne(query)
-      res.send(result)
-    })
-
-    // get data based on email
-    app.get('/query/:email',async(req,res)=>{
-      const email = req.params.email
-      const query = {'user_info.email':email};
-      console.log(query);
-      const result = await queryCollection.find(query).toArray()
-      res.send(result)
-    })
+      const result = await queryCollection.deleteOne(query);
+      res.send(result);
+    });
 
 
-     // delete a query data form db
-     app.delete('/query-id/:id',async(req,res)=>{
-      const id = req.params.id
-      const query = {_id: new ObjectId(id)}
-      console.log(query);
-      const result = await queryCollection.deleteOne(query)
-      res.send(result)
-    })
-
+// update a query
+app.put("/queries/:id", async (req, res) => {
+  const id = req.params.id;
+  const queryData = req.body;
+  const query = { _id: new ObjectId(id) };
+  console.log(query);
+  const options = {upsert: true}
+  const updateDoc = {
+    $set:{
+      ...queryData
+    }
+  }
+  const result = await queryCollection.updateOne(query,updateDoc,options)
+  res.send(result)
+});
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
