@@ -8,14 +8,35 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://electro-insight.web.app"],
+  origin: [
+    "http://localhost:5173",
+    "https://electro-insight.web.app",
+    "https://electro-insight.firebaseapp.com",
+  ],
   credentials: true,
   optionSuccessStatus: 200,
 };
+// middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
-app.use(express.json());
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) return res.status(401).send({ message: "unauthorized access" });
+  if (token) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        console.log(err);
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+      console.log(decoded);
+
+      req.user = decoded;
+      next();
+    });
+  }
+};
 
 const uri = `mongodb+srv://${process.env.user_DB}:${process.env.secret_KEY}@cluster0.2evw8as.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -35,7 +56,6 @@ async function run() {
       .db("electroInsight")
       .collection("recommendation");
 
-
     // Generate JWT
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -43,7 +63,6 @@ async function run() {
         expiresIn: "186d",
       });
 
-      
       res
         .cookie("token", token, {
           httpOnly: true,
@@ -53,7 +72,7 @@ async function run() {
         .send({ success: true });
     });
 
-    // clear token 
+    // clear token
     app.get("/logout", (req, res) => {
       res
         .clearCookie("token", {
@@ -75,8 +94,13 @@ async function run() {
 
     // get query from db
     app.get("/queries", async (req, res) => {
+      
+      const search = req.query.search;
+      console.log(search);
+      let query = {
+        product_name: {$regex:search,$options:'i'}
+      }
       const result = await queryCollection.find().toArray();
-      // console.log(result);
       res.send(result);
     });
 
@@ -90,10 +114,9 @@ async function run() {
     });
 
     // get data based on email
-    app.get("/query/:email", async (req, res) => {
+    app.get("/query/:email",  async (req, res) => {
       const email = req.params.email;
       const query = { "user_info.email": email };
-      // console.log(query);
       const result = await queryCollection.find(query).toArray();
       res.send(result);
     });
@@ -109,7 +132,7 @@ async function run() {
     app.get("/recForMe/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
-      // console.log(query);
+
       const result = await recommendationCollection.find(query).toArray();
       res.send(result);
     });
@@ -118,7 +141,6 @@ async function run() {
     app.get("/my-rec/:email", async (req, res) => {
       const email = req.params.email;
       const query = { "query.query_email": email };
-      // console.log(query);
       const result = await recommendationCollection.find(query).toArray();
       res.send(result);
     });
@@ -127,7 +149,6 @@ async function run() {
     app.delete("/query-id/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      // console.log(query);
       const result = await queryCollection.deleteOne(query);
       res.send(result);
     });
