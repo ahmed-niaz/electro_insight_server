@@ -55,7 +55,7 @@ async function run() {
     const recommendationCollection = client
       .db("electroInsight")
       .collection("recommendation");
-
+    const listedCollection = client.db("electroInsight").collection("listed-product");
     // Generate JWT
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -104,6 +104,11 @@ async function run() {
       res.send(result);
     });
 
+    // get listed-product
+    app.get('/suggest-product',async(req,res)=>{
+      const result = await listedCollection.find().toArray()
+      res.send(result)
+    })
     // get a single query
     app.get("/queries/:id", async (req, res) => {
       const id = req.params.id;
@@ -137,7 +142,7 @@ async function run() {
       res.send(result);
     });
 
-    //  //  My Recommendation me data on email
+     //  My Recommendation me data on email
     app.get("/my-rec/:email", async (req, res) => {
       const email = req.params.email;
       const query = { "query.query_email": email };

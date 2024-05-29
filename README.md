@@ -17,3 +17,7 @@
 ### Server side
 * using api implement get,post,delete and update with axios.
 * Also implement JWT token, create token from the server side,send token to the client side and remove token after logout.
+
+
+### Add new Features
+* In home page slider,click the 'suggest more' button to show some suggestion & click the 'Quires' to show the quires pages.
